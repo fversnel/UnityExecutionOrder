@@ -4,7 +4,7 @@ Library for Unity3D that allows components to be initialized in a specific order
 
 ## The problem
 
-Sometimes when you have a complex web of components depending on each other then initialization of these components can become a problem as Unity does not guarantee the order in which components on a `GameObject` are initialized. Consider the following example:
+Sometimes when you have a complex web of components depending on each other's initialization code then initialization of these components can become a problem as Unity does not guarantee the order in which components on a `GameObject` are initialized. Consider the following example:
 
     public class BehaviourA : MonoBehaviour 
     {
@@ -39,11 +39,11 @@ Sometimes when you have a complex web of components depending on each other then
         }
     }
 
-`BehaviourC` depends on `BehaviourB` which depends on `BehaviourA`, because they depend on each others state. So, `BehaviourC` cannot be initialized in a proper way using `Awake` and `Start` because `BehaviourB` might not have been initialized when `BehaviourC.Start()` is called.
+`BehaviourC` depends on `BehaviourB` which depends on `BehaviourA`, because they depend on each other's state. So, `BehaviourC` cannot be initialized in a proper way using `Awake` and `Start` because `BehaviourB` might not have been initialized when `BehaviourC.Start()` is called.
 
 ## The solution
 
-This library solves the problem of components depending on each other by introducing a dependency-based initialization mechanism. Its usage is very simple:
+This library solves that problem by introducing a dependency-based initialization mechanism. Its usage is simple:
 
 Let your components implement the `IInitializable` interface, like this:
 
@@ -65,5 +65,11 @@ Optionally add a `DependsOn` attribute to your class so the library knows that t
     [DependsOn(typeof(BehaviourB))]
     public class BehaviourA : MonoBehaviour, IInitializeable 
 
+You can add multiple DependsOn attributes on the same class.
+
 In the Unity editor make sure to add the `DependencyBasedMonoBehaviourInitialization` to your `GameObject` otherwise initialization will not be performed at all.
-    
+
+## Limitations
+
+ - Currently only works for components referencing each other inside a single GameObject.
+ - Implementation is probably slow as dependency graphs are not yet cached or anything.
