@@ -18,7 +18,6 @@ public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
 
         var initializableComponents = Initialization.FindInitializeables(gameObject);
         var componentReference = Initialization.CreateInitializableReference(initializableComponents);
-
         
         var visitedComponents = new HashSet<Type>();
         foreach (var component in initializableComponents)

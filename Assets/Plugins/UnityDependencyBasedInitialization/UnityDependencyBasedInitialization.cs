@@ -58,24 +58,23 @@ namespace UnityDependencyBasedInitialization
         public static IEnumerable<T> ExecutionOrder<T>(Node<T> graph)
         {
             return DepthFirstEvaluationOrder(graph)
-                .Reverse()
                 .Select(node => node.Value);
         }
 
         private static IEnumerable<Node<T>> DepthFirstEvaluationOrder<T>(Node<T> root)
         {
-            Func<Stack<Node<T>>, Node<T>, Stack<Node<T>>> inner = null;
+            Func<Queue<Node<T>>, Node<T>, Queue<Node<T>>> inner = null;
             inner = (order, node) =>
             {
                 foreach (var child in node.Children)
                 {
                     order = inner(order, child);
                 }
-                order.Push(node);
+                order.Enqueue(node);
                 return order;
             };
 
-            return inner(new Stack<Node<T>>(), root);
+            return inner(new Queue<Node<T>>(), root);
         } 
 
         public class Node<T> : IEquatable<Node<T>>
