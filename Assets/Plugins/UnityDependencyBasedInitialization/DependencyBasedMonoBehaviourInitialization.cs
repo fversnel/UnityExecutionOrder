@@ -6,28 +6,26 @@ using UnityDependencyBasedInitialization;
 
 public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
 
-    void Awake()
+    void Start()
     {
-        var componentReference = new Dictionary<Type, IInitializeable>();
-        var dependencyGraphs = new List<DependencyGraph.Node<Type>>();
-        var components = GetComponents<Component>();
-        foreach (var component in components)
+        // TODO Allow multiple implementations of the dependency manager
+        var dependencyManager = FindObjectOfType(typeof(CachingDependencyManager)) as IDependencyManager;
+        if (dependencyManager == null)
         {
-            var componentType = component.GetType();
-            var interfaces = componentType.GetInterfaces();
-            if (interfaces.Contains(typeof (IInitializeable)))
-            {
-                var dependencyGraph = DependencyGraph.CreateDependencyGraph(componentType);
-                dependencyGraphs.Add(dependencyGraph);
-                componentReference.Add(componentType, component as IInitializeable);
-            }
+            throw new Exception("Failed to initialize game object " + this + 
+                " because the dependency manager could not be found.");
         }
 
+        var initializableComponents = Initialization.FindInitializeables(gameObject);
+        var componentReference = Initialization.CreateInitializableReference(initializableComponents);
+
+        
         var visitedComponents = new HashSet<Type>();
-        foreach (DependencyGraph.Node<Type> graph in dependencyGraphs)
+        foreach (var component in initializableComponents)
         {
-            var evaluationOrder = DependencyGraph.EvaluationOrder(graph);
-            foreach (Type evaluatedType in evaluationOrder)
+            var executionOrder = dependencyManager.GetExecutionOrder(component.GetType());
+
+            foreach (Type evaluatedType in executionOrder)
             {
                 if (!visitedComponents.Contains(evaluatedType))
                 {

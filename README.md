@@ -67,9 +67,10 @@ Optionally add a `DependsOn` attribute to your class so the library knows that t
 
 You can add multiple DependsOn attributes on the same class.
 
-In the Unity editor make sure to add the `DependencyBasedMonoBehaviourInitialization` to your `GameObject` otherwise initialization will not be performed at all.
+In the Unity editor make sure to add the `DependencyBasedMonoBehaviourInitialization` to your `GameObject` otherwise initialization will not be performed at all. Also, add the _DependencyCache prefab to the game.
+
+Dependency Graphs are cached.
 
 ## Limitations
 
  - Currently only works for components referencing each other inside a single GameObject.
- - Implementation is probably slow as dependency graphs are not yet cached or anything.

@@ -1,9 +1,47 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace UnityDependencyBasedInitialization
 {
+    public static class Initialization
+    {
+        public static IDictionary<Type, IInitializeable> CreateInitializableReference(IEnumerable<Component> initializableComponents)
+        {
+            var componentReference = new Dictionary<Type, IInitializeable>();
+            foreach (var initializable in initializableComponents)
+            {
+                componentReference.Add(initializable.GetType(), initializable as IInitializeable);
+            }
+            return componentReference;
+        }
+
+        public static IList<Component> FindInitializeables(GameObject gameObject)
+        {
+            var initializeables = new List<Component>();
+
+            var components = gameObject.GetComponents<Component>();
+            foreach (var component in components)
+            {
+                var componentType = component.GetType();
+                var interfaces = componentType.GetInterfaces();
+                if (interfaces.Contains(typeof(IInitializeable)))
+                {
+                    initializeables.Add(component);
+                }
+            }
+
+            return initializeables;
+        }
+    }
+
+    public interface IDependencyManager
+    {
+        IEnumerable<Type> GetExecutionOrder(Type someType);
+    }
+
     public static class DependencyGraph
     {
         public static Node<Type> CreateDependencyGraph(Type someType)
@@ -17,31 +55,28 @@ namespace UnityDependencyBasedInitialization
             return new Node<Type>(someType, children);
         }
 
-        public static IEnumerable<T> EvaluationOrder<T>(Node<T> graph)
+        public static IEnumerable<T> ExecutionOrder<T>(Node<T> graph)
         {
-            return BreadthFirstEvaluationOrder(graph)
+            return DepthFirstEvaluationOrder(graph)
                 .Reverse()
                 .Select(node => node.Value);
         }
 
-        private static IEnumerable<Node<T>> BreadthFirstEvaluationOrder<T>(Node<T> root)
+        private static IEnumerable<Node<T>> DepthFirstEvaluationOrder<T>(Node<T> root)
         {
-            var visited = new HashSet<Node<T>>();
-
-            var q = new Queue<Node<T>>();
-            q.Enqueue(root);
-            while (q.Count > 0)
+            Func<Stack<Node<T>>, Node<T>, Stack<Node<T>>> inner = null;
+            inner = (order, node) =>
             {
-                Node<T> current = q.Dequeue();
-                if (!visited.Contains(current))
+                foreach (var child in node.Children)
                 {
-                    visited.Add(current);
-                    yield return current;
+                    order = inner(order, child);
                 }
-                foreach (var child in current.Children)
-                    q.Enqueue(child);
-            }
-        }
+                order.Push(node);
+                return order;
+            };
+
+            return inner(new Stack<Node<T>>(), root);
+        } 
 
         public class Node<T> : IEquatable<Node<T>>
         {
