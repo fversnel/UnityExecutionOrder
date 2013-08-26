@@ -29,9 +29,9 @@ namespace UnityDependencyBasedInitialization
         IEnumerable<Type> GetExecutionOrder(Type someType);
     }
 
-    public static class DependencyGraph
+    public static class DependencyTree
     {
-        public static Node<Type> CreateDependencyGraph(Type rootType)
+        public static Node<Type> CreateDependencyTree(Type rootType)
         {
             var circularRefs = new HashSet<Type>();
             
@@ -67,25 +67,27 @@ namespace UnityDependencyBasedInitialization
 
         public static IEnumerable<T> ExecutionOrder<T>(Node<T> graph)
         {
-            return DepthFirstEvaluation(graph)
+            return PostOrderTraversal(graph)
                 .Select(node => node.Value);
         }
 
-        public static IEnumerable<Node<T>> DepthFirstEvaluation<T>(Node<T> root)
+        public static IEnumerable<Node<T>> PostOrderTraversal<T>(Node<T> root)
         {
-            Func<Queue<Node<T>>, Node<T>, Queue<Node<T>>> inner = null;
+            Func<IList<Node<T>>, Node<T>, Unit> inner = null;
             inner = (order, node) =>
             {
                 foreach (var child in node.Children)
                 {
-                    order = inner(order, child);
+                    inner(order, child);
                 }
-                order.Enqueue(node);
-                return order;
+                order.Add(node);
+                return Unit.Default;
             };
 
-            return inner(new Queue<Node<T>>(), root);
-        } 
+            var traverseOrder = new List<Node<T>>();
+            inner(traverseOrder, root);
+            return traverseOrder;
+        }
 
         public class Node<T> : IEquatable<Node<T>>
         {
@@ -155,9 +157,22 @@ namespace UnityDependencyBasedInitialization
 
         public static IEnumerable<Type> ExtractDependencies(Type someType)
         {
-            var attributes = someType.GetCustomAttributes(typeof(DependsOn), true).Cast<DependsOn>();
-            return attributes.Select(attribute => attribute.DependencyType)
-                .Distinct(); // Remove duplicates
+            var dependsOnAttributes = someType.GetCustomAttributes(typeof(DependsOn), true).Cast<DependsOn>();
+            var dependencies = new HashSet<Type>();
+            foreach (var dependsOnAttribute in dependsOnAttributes)
+            {
+                dependencies.Add(dependsOnAttribute.DependencyType);
+            }
+            return dependencies;
+        }
+    }
+
+    class Unit
+    {
+        public static readonly Unit Default = new Unit(); 
+
+        private Unit()
+        {
         }
     }
 }

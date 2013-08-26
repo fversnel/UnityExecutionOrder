@@ -14,7 +14,7 @@ public class CachingDependencyManager : MonoBehaviour, IDependencyManager
         {
             return cachedExecutionOrder;
         }
-        DependencyGraph.Node<Type> dependencyGraph = DependencyGraph.CreateDependencyGraph(someType);
+        DependencyTree.Node<Type> dependencyGraph = DependencyTree.CreateDependencyTree(someType);
         CacheDependencyGraph(dependencyGraph);
         return _executionOrderCache[someType];
     }
@@ -24,14 +24,14 @@ public class CachingDependencyManager : MonoBehaviour, IDependencyManager
         _executionOrderCache = new Dictionary<Type, IEnumerable<Type>>();
     }
 
-    private void CacheDependencyGraph(DependencyGraph.Node<Type> root)
+    private void CacheDependencyGraph(DependencyTree.Node<Type> root)
     {
         // Store an execution order for each node in the graph
-        foreach (var node in DependencyGraph.DepthFirstEvaluation(root))
+        foreach (var node in DependencyTree.PostOrderTraversal(root))
         {
             if (!_executionOrderCache.ContainsKey(node.Value))
             {
-                _executionOrderCache.Add(node.Value, DependencyGraph.ExecutionOrder(node));                  
+                _executionOrderCache.Add(node.Value, DependencyTree.ExecutionOrder(node));                  
             }
         }
     }
