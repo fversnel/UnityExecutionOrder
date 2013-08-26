@@ -7,32 +7,20 @@ namespace UnityDependencyBasedInitialization
 {
     public static class Initialization
     {
-        public static IDictionary<Type, IInitializeable> CreateInitializableReference(IEnumerable<Component> initializableComponents)
+        public static IDictionary<Type, Component> CreateComponentReference(IEnumerable<Component> components)
         {
-            var componentReference = new Dictionary<Type, IInitializeable>();
-            foreach (var initializable in initializableComponents)
-            {
-                componentReference.Add(initializable.GetType(), initializable as IInitializeable);
-            }
-            return componentReference;
-        }
-
-        public static IList<Component> FindInitializeables(GameObject gameObject)
-        {
-            var initializeables = new List<Component>();
-
-            var components = gameObject.GetComponents<Component>();
+            var componentReference = new Dictionary<Type, Component>();
             foreach (var component in components)
             {
-                var componentType = component.GetType();
-                var interfaces = componentType.GetInterfaces();
-                if (interfaces.Contains(typeof(IInitializeable)))
-                {
-                    initializeables.Add(component);
-                }
+                componentReference.Add(component.GetType(), component);
             }
+            return componentReference;
+        } 
 
-            return initializeables;
+        public static bool IsInitializable(Type componentType)
+        {
+            var interfaces = componentType.GetInterfaces();
+            return interfaces.Contains(typeof (IInitializeable));
         }
     }
 
@@ -45,6 +33,9 @@ namespace UnityDependencyBasedInitialization
     {
         public static Node<Type> CreateDependencyGraph(Type rootType)
         {
+            var nonInitializables = new HashSet<Type>();
+            var circularRefs = new HashSet<Type>();
+            
             Func<Type, IEnumerable<Type>, Node<Type>> inner = null;
             inner = (someType, visitedNodes) =>
             {
@@ -54,18 +45,34 @@ namespace UnityDependencyBasedInitialization
                 {
                     if (!visitedNodes.Contains(dependency))
                     {
+                        if (!Initialization.IsInitializable(dependency))
+                        {
+                            nonInitializables.Add(dependency);
+                        }
+
                         children.Add(inner(dependency, new HashSet<Type>(visitedNodes) { someType }));
                     }
                     else
                     {
-                        Debug.LogWarning("Circular dependency detected at " + someType);
+                        circularRefs.Add(someType);
                     }
                 }
 
                 return new Node<Type>(someType, children);
             };
 
-            return inner(rootType, new HashSet<Type>());
+            var graph = inner(rootType, new HashSet<Type>());
+
+            foreach (var circularRef in circularRefs)
+            {
+                Debug.LogWarning("Circular dependency detected at " + circularRef);
+            }
+            foreach (var nonInitializable in nonInitializables)
+            {
+                Debug.LogWarning(nonInitializable + " is part of a dependency graph but does not implement IInitializable interface.");
+            }
+
+            return graph;
         }
 
         public static IEnumerable<T> ExecutionOrder<T>(Node<T> graph)

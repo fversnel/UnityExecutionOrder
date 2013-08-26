@@ -1,37 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityDependencyBasedInitialization;
 
 public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
 
-    void Start()
+    private void Start()
     {
         // TODO Allow multiple implementations of the dependency manager
-        var dependencyManager = FindObjectOfType(typeof(CachingDependencyManager)) as IDependencyManager;
+        var dependencyManager = FindObjectOfType(typeof (CachingDependencyManager)) as IDependencyManager;
         if (dependencyManager == null)
         {
-            throw new Exception("Failed to initialize game object " + this + 
-                " because the dependency manager could not be found.");
+            throw new Exception("Failed to initialize game object " + this +
+                                " because the dependency manager could not be found.");
         }
 
-        var initializableComponents = Initialization.FindInitializeables(gameObject);
-        var componentReference = Initialization.CreateInitializableReference(initializableComponents);
-        
+        var components = GetComponents<Component>();
+        var componentReference = Initialization.CreateComponentReference(GetComponents<Component>());
+
         var visitedComponents = new HashSet<Type>();
-        foreach (var component in initializableComponents)
+        foreach (var component in components)
         {
             var executionOrder = dependencyManager.GetExecutionOrder(component.GetType());
 
             foreach (Type evaluatedType in executionOrder)
             {
-                if (!visitedComponents.Contains(evaluatedType))
+                if (!visitedComponents.Contains(evaluatedType) && Initialization.IsInitializable(evaluatedType))
                 {
                     visitedComponents.Add(evaluatedType);
-                    componentReference[evaluatedType].Initialize();
+                    (componentReference[evaluatedType] as IInitializeable).Initialize();
                 }
             }
         }
     }
+
 }
