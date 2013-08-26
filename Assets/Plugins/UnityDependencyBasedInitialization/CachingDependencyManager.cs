@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityDependencyBasedInitialization;
 using UnityEngine;
 
 public class CachingDependencyManager : MonoBehaviour, IDependencyManager
 {
     private IDictionary<Type, IEnumerable<Type>> _executionOrderCache;
-
-    void Awake()
-    {
-        _executionOrderCache = new Dictionary<Type, IEnumerable<Type>>();
-    }
 
     public IEnumerable<Type> GetExecutionOrder(Type someType)
     {
@@ -20,22 +14,26 @@ public class CachingDependencyManager : MonoBehaviour, IDependencyManager
         {
             return cachedExecutionOrder;
         }
-        else
-        {
-            var dependencyGraph = DependencyGraph.CreateDependencyGraph(someType);
-            CacheDependencyGraph(dependencyGraph);
-            return _executionOrderCache[someType]
-        }
+        DependencyGraph.Node<Type> dependencyGraph = DependencyGraph.CreateDependencyGraph(someType);
+        CacheDependencyGraph(dependencyGraph);
+        return _executionOrderCache[someType];
     }
 
-    private void CacheDependencyGraph(DependencyGraph.Node<Type> node)
+    private void Awake()
     {
-        var executionOrder = DependencyGraph.ExecutionOrder(graph);
-        _executionOrderCache.Add(node.Value, executionOrder);
-        // Also cache sub graphs
-        foreach(var dependency in graph.Children)
+        _executionOrderCache = new Dictionary<Type, IEnumerable<Type>>();
+    }
+
+    private void CacheDependencyGraph(DependencyGraph.Node<Type> root)
+    {
+        // Store an execution order for each node in the graph
+        foreach (var node in DependencyGraph.DepthFirstEvaluation(root))
         {
-            CacheDependencyGraph(dependency);
+            if (!_executionOrderCache.ContainsKey(node.Value))
+            {
+                IEnumerable<Type> executionOrder = DependencyGraph.ExecutionOrder(node);
+                _executionOrderCache.Add(node.Value, executionOrder);                  
+            }
         }
     }
 }

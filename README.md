@@ -69,11 +69,10 @@ You can add multiple DependsOn attributes on the same class.
 
 In the Unity editor make sure to add the `DependencyBasedMonoBehaviourInitialization` to your `GameObject` otherwise initialization will not be performed at all. Also, add the `CachingDependencyManager` script to a global `GameObject` to the scene so the initialization can use a global cache.
 
-Complex dependencies are not a problem, e.g. A depends on B, B depends on C, E depends on B and C.
-
-Dependency Graphs are cached.
+ - Complex dependencies are not a problem, e.g. A depends on B, B depends on C, E depends on B and C.
+ - Dependency Graphs are cached.
+ - Circular dependencies between components will be detected. The order of initialization of these components will be unpredictable.
 
 ## Limitations
 
  - Currently only works for components referencing each other inside a single GameObject.
- - Circular dependencies might not be handled very well.

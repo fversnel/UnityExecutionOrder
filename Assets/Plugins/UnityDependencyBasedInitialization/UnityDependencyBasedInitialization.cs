@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -44,37 +43,51 @@ namespace UnityDependencyBasedInitialization
 
     public static class DependencyGraph
     {
-        public static Node<Type> CreateDependencyGraph(Type someType)
+        public static Node<Type> CreateDependencyGraph(Type rootType)
         {
-            // TODO Watch out for circular dependencies,
-            var dependencies = DependsOn.ExtractDependencies(someType);
-            var children = new List<Node<Type>>();
-            foreach (Type dependency in dependencies)
+            Func<Type, IEnumerable<Type>, Node<Type>> inner = null;
+            inner = (someType, visitedNodes) =>
             {
-                children.Add(CreateDependencyGraph(dependency));
-            }
-            return new Node<Type>(someType, children);
+                var dependencies = DependsOn.ExtractDependencies(someType);
+                var children = new List<Node<Type>>();
+                foreach (Type dependency in dependencies)
+                {
+                    if (!visitedNodes.Contains(dependency))
+                    {
+                        children.Add(inner(dependency, new HashSet<Type>(visitedNodes) { someType }));
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Circular dependency detected between at " + someType);
+                    }
+                }
+
+                return new Node<Type>(someType, children);
+            };
+
+            return inner(rootType, new HashSet<Type>());
         }
 
         public static IEnumerable<T> ExecutionOrder<T>(Node<T> graph)
         {
-            return DepthFirstEvaluationOrder(graph);
+            return DepthFirstEvaluation(graph)
+                .Select(node => node.Value);
         }
 
-        private static IEnumerable<T> DepthFirstEvaluationOrder<T>(Node<T> root)
+        public static IEnumerable<Node<T>> DepthFirstEvaluation<T>(Node<T> root)
         {
-            Func<Queue<T>, Node<T>, Queue<T>> inner = null;
+            Func<Queue<Node<T>>, Node<T>, Queue<Node<T>>> inner = null;
             inner = (order, node) =>
             {
                 foreach (var child in node.Children)
                 {
                     order = inner(order, child);
                 }
-                order.Enqueue(node.Value);
+                order.Enqueue(node);
                 return order;
             };
 
-            return inner(new Queue<T>(), root);
+            return inner(new Queue<Node<T>>(), root);
         } 
 
         public class Node<T> : IEquatable<Node<T>>
