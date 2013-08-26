@@ -25,10 +25,13 @@ public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
 
             foreach (Type evaluatedType in executionOrder)
             {
-                if (!visitedComponents.Contains(evaluatedType) && Initialization.IsInitializable(evaluatedType))
+                if (!visitedComponents.Contains(evaluatedType))
                 {
                     visitedComponents.Add(evaluatedType);
-                    (componentReference[evaluatedType] as IInitializeable).Initialize();
+                    if (Initialization.IsInitializable(evaluatedType))
+                    {
+                        (componentReference[evaluatedType] as IInitializeable).Initialize();
+                    }
                 }
             }
         }
