@@ -69,7 +69,7 @@ namespace UnityDependencyBasedInitialization
             }
             foreach (var nonInitializable in nonInitializables)
             {
-                Debug.LogWarning(nonInitializable + " is part of a dependency graph but does not implement IInitializable interface.");
+                Debug.LogWarning(nonInitializable + " is part of a dependency graph but does not implement the IInitializable interface.");
             }
 
             return graph;
