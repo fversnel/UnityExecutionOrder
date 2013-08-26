@@ -67,7 +67,7 @@ Optionally add a `DependsOn` attribute to your class so the library knows that t
 
 You can add multiple DependsOn attributes on the same class.
 
-In the Unity editor make sure to add the `DependencyBasedMonoBehaviourInitialization` to your `GameObject` otherwise initialization will not be performed at all. Also, add the _DependencyCache prefab to the game.
+In the Unity editor make sure to add the `DependencyBasedMonoBehaviourInitialization` to your `GameObject` otherwise initialization will not be performed at all. Also, add the `CachingDependencyManager` script to a global `GameObject` to the scene so the initialization can use a global cache.
 
 Complex dependencies are not a problem, e.g. A depends on B, B depends on C, E depends on B and C.
 
