@@ -156,7 +156,8 @@ namespace UnityDependencyBasedInitialization
         public static IEnumerable<Type> ExtractDependencies(Type someType)
         {
             var attributes = someType.GetCustomAttributes(typeof(DependsOn), true).Cast<DependsOn>();
-            return attributes.Select(attribute => attribute.DependencyType);
+            return attributes.Select(attribute => attribute.DependencyType)
+                .Distinct(); // Remove duplicates
         }
     }
 }

@@ -31,8 +31,7 @@ public class CachingDependencyManager : MonoBehaviour, IDependencyManager
         {
             if (!_executionOrderCache.ContainsKey(node.Value))
             {
-                IEnumerable<Type> executionOrder = DependencyGraph.ExecutionOrder(node);
-                _executionOrderCache.Add(node.Value, executionOrder);                  
+                _executionOrderCache.Add(node.Value, DependencyGraph.ExecutionOrder(node));                  
             }
         }
     }
