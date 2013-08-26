@@ -46,6 +46,7 @@ namespace UnityDependencyBasedInitialization
     {
         public static Node<Type> CreateDependencyGraph(Type someType)
         {
+            // TODO Watch out for circular dependencies,
             var dependencies = DependsOn.ExtractDependencies(someType);
             var children = new List<Node<Type>>();
             foreach (Type dependency in dependencies)
@@ -57,24 +58,23 @@ namespace UnityDependencyBasedInitialization
 
         public static IEnumerable<T> ExecutionOrder<T>(Node<T> graph)
         {
-            return DepthFirstEvaluationOrder(graph)
-                .Select(node => node.Value);
+            return DepthFirstEvaluationOrder(graph);
         }
 
-        private static IEnumerable<Node<T>> DepthFirstEvaluationOrder<T>(Node<T> root)
+        private static IEnumerable<T> DepthFirstEvaluationOrder<T>(Node<T> root)
         {
-            Func<Queue<Node<T>>, Node<T>, Queue<Node<T>>> inner = null;
+            Func<Queue<T>, Node<T>, Queue<T>> inner = null;
             inner = (order, node) =>
             {
                 foreach (var child in node.Children)
                 {
                     order = inner(order, child);
                 }
-                order.Enqueue(node);
+                order.Enqueue(node.Value);
                 return order;
             };
 
-            return inner(new Queue<Node<T>>(), root);
+            return inner(new Queue<T>(), root);
         } 
 
         public class Node<T> : IEquatable<Node<T>>

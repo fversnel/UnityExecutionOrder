@@ -23,9 +23,19 @@ public class CachingDependencyManager : MonoBehaviour, IDependencyManager
         else
         {
             var dependencyGraph = DependencyGraph.CreateDependencyGraph(someType);
-            var newExecutionOrder = DependencyGraph.ExecutionOrder(dependencyGraph).ToList();
-            _executionOrderCache.Add(someType, newExecutionOrder);
-            return newExecutionOrder;
+            CacheDependencyGraph(dependencyGraph);
+            return _executionOrderCache[someType]
+        }
+    }
+
+    private void CacheDependencyGraph(DependencyGraph.Node<Type> node)
+    {
+        var executionOrder = DependencyGraph.ExecutionOrder(graph);
+        _executionOrderCache.Add(node.Value, executionOrder);
+        // Also cache sub graphs
+        foreach(var dependency in graph.Children)
+        {
+            CacheDependencyGraph(dependency);
         }
     }
 }
