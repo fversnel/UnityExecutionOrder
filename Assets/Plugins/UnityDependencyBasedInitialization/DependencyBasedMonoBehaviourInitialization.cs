@@ -16,7 +16,7 @@ public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
         }
 
         var components = GetComponents<Component>();
-        var componentReference = Initialization.CreateComponentReference(GetComponents<Component>());
+        var componentReference = Initialization.CreateComponentReference(components);
 
         var visitedComponents = new HashSet<Type>();
         foreach (var component in components)
