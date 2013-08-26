@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityDependencyBasedInitialization;
 
@@ -19,29 +20,33 @@ public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
         var componentReference = Initialization.CreateComponentReference(components);
 
         var visitedComponents = new HashSet<Type>();
-        foreach (var component in components)
+        var initializables = components.Where(component => Initialization.IsInitializable(component.GetType()));
+        foreach (var initializable in initializables)
         {
-            var executionOrder = dependencyManager.GetExecutionOrder(component.GetType());
-
-            foreach (Type evaluatedType in executionOrder)
+            var executionOrder = dependencyManager.GetExecutionOrder(initializable.GetType());
+            foreach (Type componentType in executionOrder)
             {
-                if (!visitedComponents.Contains(evaluatedType))
+                if (!visitedComponents.Contains(componentType))
                 {
-                    visitedComponents.Add(evaluatedType);
+                    visitedComponents.Add(componentType);
 
-                    Component dependentComponent;
-                    componentReference.TryGetValue(evaluatedType, out dependentComponent);
-                    if (dependentComponent != null)
+                    Component component;
+                    componentReference.TryGetValue(componentType, out component);
+                    if (component != null)
                     {
-                        if (Initialization.IsInitializable(evaluatedType))
+                        if (Initialization.IsInitializable(componentType))
                         {
-                            (dependentComponent as IInitializeable).Initialize();
+                            (component as IInitializeable).Initialize();
+                        }
+                        else
+                        {
+                            Debug.LogWarning(component + " is part of a dependency graph but does not implement the IInitializable interface.");
                         }
                     }
                     else
                     {
-                        Debug.LogWarning("Initializable [" + evaluatedType + "] was depended upon but " +
-                                            "is not present on " + gameObject);       
+                        Debug.LogError("Initializable [" + componentType + "] was depended upon but " +
+                                       "is not present on " + gameObject);
                     }
                 }
             }

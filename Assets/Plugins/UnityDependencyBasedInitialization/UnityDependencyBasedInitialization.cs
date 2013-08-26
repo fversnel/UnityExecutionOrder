@@ -33,7 +33,6 @@ namespace UnityDependencyBasedInitialization
     {
         public static Node<Type> CreateDependencyGraph(Type rootType)
         {
-            var nonInitializables = new HashSet<Type>();
             var circularRefs = new HashSet<Type>();
             
             Func<Type, IEnumerable<Type>, Node<Type>> inner = null;
@@ -45,11 +44,6 @@ namespace UnityDependencyBasedInitialization
                 {
                     if (!visitedNodes.Contains(dependency))
                     {
-                        if (!Initialization.IsInitializable(dependency))
-                        {
-                            nonInitializables.Add(dependency);
-                        }
-
                         children.Add(inner(dependency, new HashSet<Type>(visitedNodes) { someType }));
                     }
                     else
@@ -66,10 +60,6 @@ namespace UnityDependencyBasedInitialization
             foreach (var circularRef in circularRefs)
             {
                 Debug.LogWarning("Circular dependency detected at " + circularRef);
-            }
-            foreach (var nonInitializable in nonInitializables)
-            {
-                Debug.LogWarning(nonInitializable + " is part of a dependency graph but does not implement the IInitializable interface.");
             }
 
             return graph;
