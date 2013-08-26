@@ -28,9 +28,20 @@ public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
                 if (!visitedComponents.Contains(evaluatedType))
                 {
                     visitedComponents.Add(evaluatedType);
-                    if (Initialization.IsInitializable(evaluatedType))
+
+                    Component dependentComponent;
+                    componentReference.TryGetValue(evaluatedType, out dependentComponent);
+                    if (dependentComponent != null)
                     {
-                        (componentReference[evaluatedType] as IInitializeable).Initialize();
+                        if (Initialization.IsInitializable(evaluatedType))
+                        {
+                            (dependentComponent as IInitializeable).Initialize();
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Initializable [" + evaluatedType + "] was depended upon but " +
+                                            "is not present on " + gameObject);       
                     }
                 }
             }
