@@ -58,7 +58,7 @@ namespace UnityDependencyBasedInitialization
                     }
                     else
                     {
-                        Debug.LogWarning("Circular dependency detected between at " + someType);
+                        Debug.LogWarning("Circular dependency detected at " + someType);
                     }
                 }
 
