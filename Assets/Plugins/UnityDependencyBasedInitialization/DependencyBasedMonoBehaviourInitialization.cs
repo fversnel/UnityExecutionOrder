@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -30,17 +31,20 @@ public class DependencyBasedMonoBehaviourInitialization : MonoBehaviour {
                 {
                     visitedComponents.Add(componentType);
 
-                    Component component;
-                    componentReference.TryGetValue(componentType, out component);
-                    if (component != null)
+                    IList<Component> componentsToInitialize;
+                    componentReference.TryGetValue(componentType, out componentsToInitialize);
+                    if (componentsToInitialize != null && componentsToInitialize.Count > 0)
                     {
                         if (Initialization.IsInitializable(componentType))
                         {
-                            (component as IInitializeable).Initialize();
+                            foreach (var component in componentsToInitialize)
+                            {
+                                (component as IInitializeable).Initialize();    
+                            }
                         }
                         else
                         {
-                            Debug.LogWarning(component + " is part of a dependency graph but does not implement the IInitializable interface.");
+                            Debug.LogWarning(componentType + " is part of a dependency graph but does not implement the IInitializable interface.");
                         }
                     }
                     else

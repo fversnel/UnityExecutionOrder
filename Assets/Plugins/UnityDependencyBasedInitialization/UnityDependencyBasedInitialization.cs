@@ -7,14 +7,11 @@ namespace UnityDependencyBasedInitialization
 {
     public static class Initialization
     {
-        public static IDictionary<Type, Component> CreateComponentReference(IEnumerable<Component> components)
+        public static IDictionary<Type, IList<Component>> CreateComponentReference(IEnumerable<Component> components)
         {
-            var componentReference = new Dictionary<Type, Component>();
-            foreach (var component in components)
-            {
-                componentReference.Add(component.GetType(), component);
-            }
-            return componentReference;
+            return components.GroupBy(component => component.GetType())
+                .ToDictionary(componentsOfSameType => componentsOfSameType.Key,
+                    componentsOfSameType => componentsOfSameType.ToList() as IList<Component>);
         } 
 
         public static bool IsInitializable(Type componentType)
