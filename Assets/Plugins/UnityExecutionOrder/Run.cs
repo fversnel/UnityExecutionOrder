@@ -5,6 +5,10 @@ using System.Text;
 
 namespace UnityExecutionOrder {
 
+    /// <summary>
+    /// Signifies an execution order dependency to another type.
+    /// This type has two concrete implementations: Run.Before and Run.After
+    /// </summary>
     public abstract class Run : Attribute, IEquatable<Run> {
 
         /// <summary>
