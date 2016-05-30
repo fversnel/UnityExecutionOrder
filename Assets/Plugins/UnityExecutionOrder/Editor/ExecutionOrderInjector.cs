@@ -8,6 +8,7 @@ namespace UnityExecutionOrder {
     public class ExecutionOrderInjector {
 
         private const string ExecutionOrderPath = "./.execution_order_cache.xml";
+        private const int StartOrderIndex = 100;
 
         static ExecutionOrderInjector() {
             var monoScripts = MonoImporter.GetAllRuntimeMonoScripts()
@@ -22,7 +23,7 @@ namespace UnityExecutionOrder {
 
                 for (int i = 0; i < executionOrder.Count; i++) {
                     var scriptType = executionOrder[i];
-                    MonoImporter.SetExecutionOrder(monoScripts[scriptType], order: 100 + i);
+                    MonoImporter.SetExecutionOrder(monoScripts[scriptType], order: StartOrderIndex + i);
                 }
 
                 ExecutionOrder.SerializeExecutionOrder(ExecutionOrderPath, executionOrder);
