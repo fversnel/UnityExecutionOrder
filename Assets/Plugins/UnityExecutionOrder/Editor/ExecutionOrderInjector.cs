@@ -7,7 +7,7 @@ namespace UnityExecutionOrder {
     [InitializeOnLoad]
     public class ExecutionOrderInjector {
 
-        private const string ExecutionOrderPath = "./execution_order.xml";
+        private const string ExecutionOrderPath = "./.execution_order_cache.xml";
 
         static ExecutionOrderInjector() {
             var monoScripts = MonoImporter.GetAllRuntimeMonoScripts()
