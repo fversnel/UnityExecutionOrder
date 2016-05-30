@@ -99,7 +99,7 @@ namespace UnityExecutionOrder {
             using (var fileWriter = new FileStream(path, FileMode.OpenOrCreate))
             using (var streamWriter = new StreamWriter(fileWriter)){
                 var serializer = new XmlSerializer(typeof (List<string>));
-                serializer.Serialize(streamWriter, executionOrder.Select(type => type.ToString()).ToList());    
+                serializer.Serialize(streamWriter, executionOrder.Select(type => type.AssemblyQualifiedName).ToList());    
             }
         }
     }
