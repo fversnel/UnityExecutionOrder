@@ -4,28 +4,49 @@ using System.Linq;
 using System.Text;
 
 namespace UnityExecutionOrder {
+
     public abstract class Run : Attribute, IEquatable<Run> {
 
+        /// <summary>
+        /// Signifies that the class that has this attribute needs to be executed before
+        /// the given type.
+        /// </summary>
         [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
         public sealed class Before : Run {
             public Before(Type type) : base(type) {}
+
+            public override string ToString() {
+                return "Run.Before(" + _type + ")";
+            }
         }
 
+        /// <summary>
+        /// Signifies that the class that has this attribute needs to be executed after
+        /// the given type.
+        /// </summary>
         [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
         public sealed class After : Run {
             public After(Type type) : base(type) {}
+
+            public override string ToString() {
+                return "Run.After(" + _type + ")";
+            }
         }
 
-        public readonly Type Type;
+        private readonly Type _type;
 
         private Run(Type type) {
-            Type = type;
+            _type = type;
+        }
+
+        public Type Type {
+            get { return _type; }
         }
 
         public bool Equals(Run other) {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return base.Equals(other) && Equals(Type, other.Type);
+            return base.Equals(other) && Equals(_type, other._type);
         }
 
         public override bool Equals(object obj) {
@@ -37,7 +58,7 @@ namespace UnityExecutionOrder {
 
         public override int GetHashCode() {
             unchecked {
-                return (base.GetHashCode() * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+                return (base.GetHashCode() * 397) ^ (_type != null ? _type.GetHashCode() : 0);
             }
         }
 

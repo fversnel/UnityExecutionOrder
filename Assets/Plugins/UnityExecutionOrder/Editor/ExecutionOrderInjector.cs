@@ -6,6 +6,7 @@ namespace UnityExecutionOrder {
 
     [InitializeOnLoad]
     public class ExecutionOrderInjector {
+
         private const string ExecutionOrderPath = "./execution_order.xml";
 
         static ExecutionOrderInjector() {

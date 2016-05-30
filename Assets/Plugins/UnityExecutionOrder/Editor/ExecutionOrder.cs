@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using UnityEditor;
 
 namespace UnityExecutionOrder {
+
     public static class ExecutionOrder {
 
         public static IDictionary<Type, HashSet<Run.Before>> DependencyList(IEnumerable<Type> allTypes) {
