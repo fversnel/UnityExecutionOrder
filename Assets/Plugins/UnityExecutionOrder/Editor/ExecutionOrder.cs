@@ -81,7 +81,7 @@ namespace UnityExecutionOrder {
 
         public static IList<Type> DeserializeExecutionOrder(IDictionary<Type, MonoScript> monoScripts, string path) {
             try {
-                var monoScriptsByString = monoScripts.ToDictionary(kvPair => kvPair.Key.ToString(), kvPair => kvPair.Value);
+                var monoScriptsByString = monoScripts.ToDictionary(kvPair => kvPair.Key.AssemblyQualifiedName, kvPair => kvPair.Value);
                 using (var fileReader = new FileStream(path, FileMode.Open))
                 using (var streamReader = new StreamReader(fileReader)){
                     var serializer = new XmlSerializer(typeof (List<string>));

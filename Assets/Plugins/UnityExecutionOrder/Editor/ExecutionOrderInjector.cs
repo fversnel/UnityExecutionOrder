@@ -13,6 +13,7 @@ namespace UnityExecutionOrder {
         static ExecutionOrderInjector() {
             var monoScripts = MonoImporter.GetAllRuntimeMonoScripts()
                 .Where(script => script.GetClass() != null)
+                .Distinct(MonoScriptComparer.Default)
                 .ToDictionary(script => script.GetClass());
             var executionOrder = ExecutionOrder.GetOrder(ExecutionOrder.DependencyList(monoScripts.Keys));
 
