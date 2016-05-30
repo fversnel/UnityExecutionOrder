@@ -1,10 +1,14 @@
+# Summary
+
 Model Unity script execution order on types
 
 # Features
 
 - Automatically detects execution order dependencies between types and adds them to Unity's global execution order
-- Ability to specify 'run before' and 'run after' dependency
+- Ability to specify **run before** and **run after** dependency
 - Detects circular dependencies
+
+# Usage
 
 ```csharp
 using UnityExecutionOrder;

@@ -2,7 +2,6 @@
 using System.Collections;
 using UnityExecutionOrder;
 
-
 public class Script1 : MonoBehaviour {
 
 	// Use this for initialization
