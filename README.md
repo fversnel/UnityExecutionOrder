@@ -19,4 +19,5 @@ public class Script1 : MonoBehaviour {}
 public class Script2 : MonoBehaviour {}
 
 [Run.After(typeof(Script2))]
-public class Script3 : MonoBehaviour {}```
+public class Script3 : MonoBehaviour {}
+```
