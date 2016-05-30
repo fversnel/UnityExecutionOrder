@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
+using UnityEditor;
 
 namespace UnityExecutionOrder {
     public static class ExecutionOrder {
@@ -75,17 +78,28 @@ namespace UnityExecutionOrder {
             return type.GetCustomAttributes(typeof (Run), inherit: true).Cast<Run>().ToList();
         }
 
-        private static IEnumerable<T> Append<T>(this IEnumerable<T> e, T value) {
-            return e.Concat(new[] {value});
+        public static IList<Type> DeserializeExecutionOrder(IDictionary<Type, MonoScript> monoScripts, string path) {
+            try {
+                var monoScriptsByString = monoScripts.ToDictionary(kvPair => kvPair.Key.ToString(), kvPair => kvPair.Value);
+                using (var fileReader = new FileStream(path, FileMode.Open))
+                using (var streamReader = new StreamReader(fileReader)){
+                    var serializer = new XmlSerializer(typeof (List<string>));
+                    return (serializer.Deserialize(streamReader) as List<string>)
+                        .Where(serializedType => monoScriptsByString.ContainsKey(serializedType))
+                        .Select(serializedType => monoScriptsByString[serializedType].GetClass())
+                        .ToList();
+                }
+            } catch (FileNotFoundException) {
+                return new List<Type>();
+            }
         }
 
-        public static string JoinToString<T>(this IEnumerable<T> e, string separator) {
-            return e.Aggregate("", (acc, value) => {
-                if (acc == "") {
-                    return value.ToString();
-                }
-                return acc + separator + value;
-            });
+        public static void SerializeExecutionOrder(string path, IList<Type> executionOrder) {
+            using (var fileWriter = new FileStream(path, FileMode.OpenOrCreate))
+            using (var streamWriter = new StreamWriter(fileWriter)){
+                var serializer = new XmlSerializer(typeof (List<string>));
+                serializer.Serialize(streamWriter, executionOrder.Select(type => type.ToString()).ToList());    
+            }
         }
     }
 }

@@ -1,1 +1,8 @@
 *.meta
+Library/
+ProjectSettings/
+Temp/
+*.csproj
+*.sln
+*.suo
+execution_order.xml
