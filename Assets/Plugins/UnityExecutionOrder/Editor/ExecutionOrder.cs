@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
 using UnityEditor;
 
@@ -83,7 +84,7 @@ namespace UnityExecutionOrder {
             try {
                 var monoScriptsByString = monoScripts.ToDictionary(kvPair => kvPair.Key.AssemblyQualifiedName, kvPair => kvPair.Value);
                 using (var fileReader = new FileStream(path, FileMode.Open))
-                using (var streamReader = new StreamReader(fileReader)){
+                using (var streamReader = new StreamReader(fileReader, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))){
                     var serializer = new XmlSerializer(typeof (List<string>));
                     return (serializer.Deserialize(streamReader) as List<string>)
                         .Where(serializedType => monoScriptsByString.ContainsKey(serializedType))
@@ -97,7 +98,7 @@ namespace UnityExecutionOrder {
 
         public static void SerializeExecutionOrder(string path, IList<Type> executionOrder) {
             using (var fileWriter = new FileStream(path, FileMode.OpenOrCreate))
-            using (var streamWriter = new StreamWriter(fileWriter)){
+            using (var streamWriter = new StreamWriter(fileWriter, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))){
                 var serializer = new XmlSerializer(typeof (List<string>));
                 serializer.Serialize(streamWriter, executionOrder.Select(type => type.AssemblyQualifiedName).ToList());    
             }
