@@ -11,6 +11,7 @@ namespace UnityExecutionOrder {
         private const int StartOrderIndex = 100;
 
         static ExecutionOrderInjector() {
+            // TODO Maybe use Assembly class instead as it is more reliable
             var monoScripts = MonoImporter.GetAllRuntimeMonoScripts()
                 .Where(script => script.GetClass() != null)
                 .Distinct(MonoScriptComparer.Default)
