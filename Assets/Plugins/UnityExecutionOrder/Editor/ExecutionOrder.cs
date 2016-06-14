@@ -10,7 +10,7 @@ namespace UnityExecutionOrder {
 
     public static class ExecutionOrder {
 
-        public static IDictionary<Type, HashSet<Run.Before>> DependencyList(IEnumerable<Type> allTypes) {
+        public static IDictionary<Type, IList<Run.Before>> DependencyList(IEnumerable<Type> allTypes) {
             var typesWithDeps = allTypes
                 .Select(type => new {type, dependencies = Dependencies(type)})
                 .Where(typeWithDeps => typeWithDeps.dependencies.Any())
@@ -28,15 +28,20 @@ namespace UnityExecutionOrder {
                     dependencies.Remove(runAfterDep);
                 }
             }
-            return typesWithDeps.ToDictionary(
+            
+            var depList = typesWithDeps.ToDictionary(
                 kvPair => kvPair.Key,
                 kvPair => {
-                    var dependencies = kvPair.Value.Select(a => a as Run.Before);
-                    return new HashSet<Run.Before>(dependencies);
+                    var dependencies = kvPair.Value
+                        .Select(a => a as Run.Before)
+                        .Distinct()
+                        .ToList();
+                    return dependencies as IList<Run.Before>;
                 });
+            return new SortedDictionary<Type, IList<Run.Before>>(depList, TypeComparer.Default);
         }
 
-        public static IList<Type> GetOrder(IDictionary<Type, HashSet<Run.Before>> typesWithDependencies) {
+        public static IList<Type> GetOrder(IDictionary<Type, IList<Run.Before>> typesWithDependencies) {
             var visitedTypes = new HashSet<Type>();
             var order = new List<Type>();
             Action<IEnumerable<Type>, Type> addType = null;
@@ -49,9 +54,9 @@ namespace UnityExecutionOrder {
                 if (!visitedTypes.Contains(type)) {
                     visitedTypes.Add(type);
 
-                    HashSet<Run.Before> dependencies;
+                    IList<Run.Before> dependencies;
                     if (!typesWithDependencies.TryGetValue(type, out dependencies)) {
-                        dependencies = new HashSet<Run.Before>();
+                        dependencies = new List<Run.Before>();
                     }
 
                     if (dependencies.Count > 0) {
@@ -82,7 +87,7 @@ namespace UnityExecutionOrder {
 
         public static IList<Type> DeserializeExecutionOrder(IDictionary<Type, MonoScript> monoScripts, string path) {
             try {
-                var monoScriptsByString = monoScripts.ToDictionary(kvPair => kvPair.Key.AssemblyQualifiedName, kvPair => kvPair.Value);
+                var monoScriptsByString = monoScripts.ToDictionary(kvPair => kvPair.Key.FullName, kvPair => kvPair.Value);
                 using (var fileReader = new FileStream(path, FileMode.Open))
                 using (var streamReader = new StreamReader(fileReader, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))){
                     var serializer = new XmlSerializer(typeof (List<string>));
@@ -100,7 +105,7 @@ namespace UnityExecutionOrder {
             using (var fileWriter = new FileStream(path, FileMode.OpenOrCreate))
             using (var streamWriter = new StreamWriter(fileWriter, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false))){
                 var serializer = new XmlSerializer(typeof (List<string>));
-                serializer.Serialize(streamWriter, executionOrder.Select(type => type.AssemblyQualifiedName).ToList());    
+                serializer.Serialize(streamWriter, executionOrder.Select(type => type.FullName).ToList());    
             }
         }
     }

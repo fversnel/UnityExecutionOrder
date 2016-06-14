@@ -12,11 +12,11 @@ namespace UnityExecutionOrder {
         private MonoScriptComparer() {}
 
         public bool Equals(MonoScript x, MonoScript y) {
-            return x.GetClass() == y.GetClass();
+            return x.GetClass().FullName == y.GetClass().FullName;
         }
 
         public int GetHashCode(MonoScript obj) {
-            return obj.GetClass().GetHashCode();
+            return obj.GetClass().FullName.GetHashCode();
         }
     }
 }
