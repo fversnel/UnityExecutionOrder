@@ -7,7 +7,7 @@ namespace UnityExecutionOrder {
     [InitializeOnLoad]
     public class ExecutionOrderInjector {
 
-        private const string ExecutionOrderPath = "./.execution_order_cache.xml";
+        private const string ExecutionOrderPath = "./.execution_order_cache";
         private const int StartOrderIndex = 100;
 
         static ExecutionOrderInjector() {
